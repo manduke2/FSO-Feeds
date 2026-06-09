@@ -1,1 +1,50 @@
-PLACEHOLDER
+name: Update RSS Feed
+
+on:
+repository_dispatch:
+types: [wordpress_post]
+
+permissions:
+contents: write
+
+jobs:
+update-feed:
+runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout repo
+    uses: actions/checkout@v4
+
+  - name: Create feed.xml
+    run: |
+      cat > feed.xml <<EOF
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <rss version="2.0">
+        <channel>
+          <title>My Feed</title>
+          <link>https://USERNAME.github.io/REPO/</link>
+          <description>WordPress mirrored feed</description>
+
+          <item>
+            <title>${{ github.event.client_payload.title }}</title>
+            <link>${{ github.event.client_payload.url }}</link>
+            <description><![CDATA[
+            ${{ github.event.client_payload.excerpt }}
+            ]]></description>
+            <pubDate>${{ github.event.client_payload.date }}</pubDate>
+          </item>
+
+        </channel>
+      </rss>
+      EOF
+
+  - name: Commit updated feed
+    run: |
+      git config user.name "github-actions"
+      git config user.email "github-actions@github.com"
+
+      git add feed.xml
+
+      git diff --cached --quiet || git commit -m "Update RSS feed"
+
+      git push
