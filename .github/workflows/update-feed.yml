@@ -1,50 +1,50 @@
 name: Update RSS Feed
+# This workflow listens for repository_dispatch events of type 'wordpress_post' and updates the feed.xml file with the new post information.
 
-on:
-repository_dispatch:
-types: [wordpress_post]
-
-permissions:
-contents: write
+on: 
+  repository_dispatch:
+    types: [site_feed]
 
 jobs:
-update-feed:
-runs-on: ubuntu-latest
+  update-feed:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout repo
-    uses: actions/checkout@v4
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
 
-  - name: Create feed.xml
-    run: |
-      cat > feed.xml <<EOF
-      <?xml version="1.0" encoding="UTF-8" ?>
-      <rss version="2.0">
-        <channel>
-          <title>My Feed</title>
-          <link>https://USERNAME.github.io/REPO/</link>
-          <description>WordPress mirrored feed</description>
+    - name: Create RSS Feed
+      run: |
+        cat > fso.feed.xml  <<EOF
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <rss version="2.0">
+          <channel>
+            <title>Faculty Senate News Feed</title>
+            <link>facultysenate.umich.edu</link>
+            <description>Faculty Senate website news feed</description>
 
-          <item>
-            <title>${{ github.event.client_payload.title }}</title>
-            <link>${{ github.event.client_payload.url }}</link>
-            <description><![CDATA[
-            ${{ github.event.client_payload.excerpt }}
-            ]]></description>
-            <pubDate>${{ github.event.client_payload.date }}</pubDate>
-          </item>
+            <item>
+              <title>${{ github.event.client_payload.title }}</title>
+              <link>${{ github.event.client_payload.url }}</link>
+              <description><![CDATA[
+              ${{ github.event.client_payload.excerpt }}
+              ]]></description>
+              <pubDate>${{ github.event.client_payload.date }}</pubDate>
+            </item>
 
-        </channel>
-      </rss>
-      EOF
+          </channel>
+        </rss>
+        EOF
 
-  - name: Commit updated feed
-    run: |
-      git config user.name "github-actions"
-      git config user.email "github-actions@github.com"
+    - name: Commit Updated RSS Feed
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
 
-      git add feed.xml
+        git add fso.feed.xml
 
-      git diff --cached --quiet || git commit -m "Update RSS feed"
+        git diff --cached --quiet || git commit -m "Update RSS feed"
 
-      git push
+        git push
