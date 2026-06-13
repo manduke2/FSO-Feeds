@@ -19,7 +19,7 @@ jobs:
 
     - name: Create or update RSS feed
       run: |
-        FEED_FILE="fso.feed.xml"
+        export FEED_FILE="fso.feed.xml"
 
         python3 <<'PY'
         import json
