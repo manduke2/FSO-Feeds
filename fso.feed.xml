@@ -10,7 +10,9 @@
     <author>Luke McCarthy</author>
     <description><![CDATA[
 
+
 testing content 324234
+    
     
     ]]></description>
     <pubDate>Sat, 13 Jun 2026 03:51:23 +0000</pubDate>
@@ -22,6 +24,7 @@ testing content 324234
     <link>https://dev-sacua-facultysenate.pantheonsite.io/statement-on-faculty-representation-in-the-2026-presidential-search/</link>
     <author>Eric Vandenberghe</author>
     <description><![CDATA[
+
 With a new presidential search now underway, and in keeping with the <a href="https://docs.google.com/document/d/1pNyeBvgF405XUA6bsdk0jAHNU5JyKPZS/edit">November 2025 resolution</a> of the Faculty Senate, we request that a member of SACUA or a SACUA designee be included on the Presidential Search Committee.
 
 We make this request in the spirit of consultative leadership, democratic principles, and shared governance. Though we genuinely appreciate that multiple faculty members are on the Search Committee, the distinction between faculty selected by the administration and duly elected faculty representatives is both substantive and symbolic. Elected members of the Faculty Senate carry a mandate from the faculty as a whole. They are positioned to solicit and express overall faculty priorities throughout the process.
@@ -34,9 +37,21 @@ SACUA is ready and willing to engage constructively throughout the search. We as
 Approved by the Senate Advisory Committee on University Affairs (SACUA) on May 30, 2026.
 
 <a href="https://facultysenate.umich.edu/wp-content/uploads/2026/06/SACUA.Presidential-Search-Committee-Statement.pdf">Link to PDF</a>
+    
     ]]></description>
     <pubDate>Mon, 01 Jun 2026 13:55:34 +0000</pubDate>
     <category>Featured News, SACUA News</category>
+  </item>
+
+  <item>
+    <title>test 7</title>
+    <link>https://dev-sacua-facultysenate.pantheonsite.io/test-7/</link>
+    <author>Luke McCarthy</author>
+    <description><![CDATA[
+test content 7
+    ]]></description>
+    <pubDate>Fri, 13 Jun 2025 03:47:48 +0000</pubDate>
+    <category>Faculty Senate News</category>
   </item>
 
   </channel>
