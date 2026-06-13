@@ -1,0 +1,13 @@
+name: Dispatch Log
+
+on:
+  repository_dispatch:
+    # If you omit 'types' entirely, ALL custom event types will trigger this.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: View the event type
+        # This will print the custom string you dispatched
+        run: echo "The triggered event type was ${{ github.event.action }}"
