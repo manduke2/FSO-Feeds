@@ -21,152 +21,153 @@ jobs:
       run: |
         FEED_FILE="fso.feed.xml"
 
-        python3 - <<'PY'
-import json
-import os
-import sys
-from email.utils import format_datetime, parsedate_to_datetime
-from html import escape
-from pathlib import Path
-from xml.etree import ElementTree as ET
+        python3 <<'PY'
+        import json
+        import os
+        import sys
+        from email.utils import format_datetime, parsedate_to_datetime
+        from html import escape
+        from pathlib import Path
+        from xml.etree import ElementTree as ET
 
-feed_file = Path(os.environ["FEED_FILE"])
-event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+        feed_file = Path(os.environ["FEED_FILE"])
+        event_path = Path(os.environ["GITHUB_EVENT_PATH"])
 
-with event_path.open("r", encoding="utf-8") as event_file:
-    event = json.load(event_file)
+        with event_path.open("r", encoding="utf-8") as event_file:
+            event = json.load(event_file)
 
-payload = event.get("client_payload", {})
-required_fields = ["title", "url", "content", "date"]
-missing = [field for field in required_fields if not payload.get(field)]
-if missing:
-    sys.exit(f"Missing required payload fields: {', '.join(missing)}")
+        payload = event.get("client_payload", {})
+        required_fields = ["title", "url", "content", "date"]
+        missing = [field for field in required_fields if not payload.get(field)]
+        if missing:
+            sys.exit(f"Missing required payload fields: {', '.join(missing)}")
 
-categories = payload.get("categories", payload.get("category"))
-if not categories:
-    sys.exit("Missing required payload field: category or categories")
-if isinstance(categories, list):
-    categories = ", ".join(str(item) for item in categories)
-elif not isinstance(categories, str):
-    categories = str(categories)
+        categories = payload.get("categories", payload.get("category"))
+        if not categories:
+            sys.exit("Missing required payload field: category or categories")
+        if isinstance(categories, list):
+            categories = ", ".join(str(item) for item in categories)
+        elif not isinstance(categories, str):
+            categories = str(categories)
 
-author = payload.get("author")
+        author = payload.get("author")
 
-url = payload["url"]
-if not url.startswith(("http://", "https://")):
-    sys.exit("The url payload must be a full URL starting with http:// or https://")
+        url = payload["url"]
+        if not url.startswith(("http://", "https://")):
+            sys.exit("The url payload must be a full URL starting with http:// or https://")
 
-from datetime import datetime
-
-
-def parse_date(value: str):
-    try:
-        return parsedate_to_datetime(value)
-    except (TypeError, ValueError):
-        pass
-    try:
-        return datetime.fromisoformat(value)
-    except ValueError:
-        raise
-
-try:
-    pub_date_dt = parse_date(payload["date"])
-except (TypeError, ValueError):
-    sys.exit("Invalid pubDate format: must be a valid RFC 822 / RFC 2822 date or ISO 8601 timestamp")
-
-pub_date = format_datetime(pub_date_dt)
+        from datetime import datetime
 
 
-def sanitize_cdata(text: str) -> str:
-    return text.replace("]]>", "]]]]]><![CDATA[>")
+        def parse_date(value: str):
+            try:
+                return parsedate_to_datetime(value)
+            except (TypeError, ValueError):
+                pass
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError:
+                raise
 
-
-def render_item(item: dict) -> str:
-    author_line = f"    <author>{escape(item['author'])}</author>\n" if item.get('author') else ""
-    return f"""  <item>
-    <title>{escape(item['title'])}</title>
-    <link>{escape(item['link'])}</link>
-{author_line}    <description><![CDATA[
-{sanitize_cdata(item['content'])}
-    ]]></description>
-    <pubDate>{escape(item['pubDate'])}</pubDate>
-    <category>{escape(item['category'])}</category>
-  </item>
-"""
-
-new_item = {
-    "title": payload["title"],
-    "link": url,
-    "content": payload["content"],
-    "pubDate": pub_date,
-    "category": categories,
-}
-if author:
-    new_item["author"] = author
-
-items = []
-channel_metadata = {
-    "title": "Faculty Senate News Feed",
-    "link": "https://facultysenate.umich.edu",
-    "description": "Faculty Senate website news feed",
-}
-
-if feed_file.exists():
-    tree = ET.parse(feed_file)
-    root = tree.getroot()
-    channel = root.find("channel")
-    if channel is None:
-        sys.exit("Existing feed is invalid: missing channel element")
-
-    for child in channel:
-        if child.tag == "item":
-            items.append({
-                "title": child.findtext("title", default=""),
-                "link": child.findtext("link", default=""),
-                "author": child.findtext("author", default=""),
-                "content": child.findtext("description", default=""),
-                "pubDate": child.findtext("pubDate", default=""),
-                "category": child.findtext("category", default=""),
-            })
-        elif child.tag in channel_metadata:
-            channel_metadata[child.tag] = child.text or channel_metadata[child.tag]
-
-items.append(new_item)
-else:
-    items.append(new_item)
-
-
-def item_date(item: dict):
-    text = item.get("pubDate", "")
-    try:
-        return parsedate_to_datetime(text)
-    except (TypeError, ValueError):
         try:
-            return datetime.fromisoformat(text)
-        except ValueError:
-            return pub_date_dt
+            pub_date_dt = parse_date(payload["date"])
+        except (TypeError, ValueError):
+            sys.exit("Invalid pubDate format: must be a valid RFC 822 / RFC 2822 date or ISO 8601 timestamp")
 
-sorted_items = sorted(items, key=item_date, reverse=True)
+        pub_date = format_datetime(pub_date_dt)
 
-feed_text = [
-    '<?xml version="1.0" encoding="UTF-8" ?>',
-    '<rss version="2.0">',
-    '  <channel>',
-    f'    <title>{escape(channel_metadata["title"])}</title>',
-    f'    <link>{escape(channel_metadata["link"])}</link>',
-    f'    <description>{escape(channel_metadata["description"])}</description>',
-]
 
-for item in sorted_items:
-    feed_text.append(render_item(item))
+        def sanitize_cdata(text: str) -> str:
+            return text.replace("]]>", "]]]]]><![CDATA[>")
 
-feed_text.extend([
-    '  </channel>',
-    '</rss>',
-])
 
-feed_file.write_text("\n".join(feed_text) + "\n", encoding="utf-8")
-PY
+        def render_item(item: dict) -> str:
+            author_line = f"    <author>{escape(item['author'])}</author>\n" if item.get('author') else ""
+            parts = []
+            parts.append("  <item>")
+            parts.append(f"    <title>{escape(item['title'])}</title>")
+            parts.append(f"    <link>{escape(item['link'])}</link>")
+            if author_line:
+                parts.append(author_line.rstrip())
+            parts.append("    <description><![CDATA[")
+            parts.append(sanitize_cdata(item['content']))
+            parts.append("    ]]></description>")
+            parts.append(f"    <pubDate>{escape(item['pubDate'])}</pubDate>")
+            parts.append(f"    <category>{escape(item['category'])}</category>")
+            parts.append("  </item>")
+            return "\n".join(parts) + "\n"
+
+        new_item = {
+            "title": payload["title"],
+            "link": url,
+            "content": payload["content"],
+            "pubDate": pub_date,
+            "category": categories,
+        }
+        if author:
+            new_item["author"] = author
+
+        items = []
+        channel_metadata = {
+            "title": "Faculty Senate News Feed",
+            "link": "https://facultysenate.umich.edu",
+            "description": "Faculty Senate website news feed",
+        }
+
+        if feed_file.exists():
+            tree = ET.parse(feed_file)
+            root = tree.getroot()
+            channel = root.find("channel")
+            if channel is None:
+                sys.exit("Existing feed is invalid: missing channel element")
+
+            for child in channel:
+                if child.tag == "item":
+                    items.append({
+                        "title": child.findtext("title", default=""),
+                        "link": child.findtext("link", default=""),
+                        "author": child.findtext("author", default=""),
+                        "content": child.findtext("description", default=""),
+                        "pubDate": child.findtext("pubDate", default=""),
+                        "category": child.findtext("category", default=""),
+                    })
+                elif child.tag in channel_metadata:
+                    channel_metadata[child.tag] = child.text or channel_metadata[child.tag]
+
+        items.append(new_item)
+
+
+        def item_date(item: dict):
+            text = item.get("pubDate", "")
+            try:
+                return parsedate_to_datetime(text)
+            except (TypeError, ValueError):
+                try:
+                    return datetime.fromisoformat(text)
+                except ValueError:
+                    return pub_date_dt
+
+        sorted_items = sorted(items, key=item_date, reverse=True)
+
+        feed_text = [
+            '<?xml version="1.0" encoding="UTF-8" ?>',
+            '<rss version="2.0">',
+            '  <channel>',
+            f'    <title>{escape(channel_metadata["title"])}</title>',
+            f'    <link>{escape(channel_metadata["link"])}</link>',
+            f'    <description>{escape(channel_metadata["description"])}</description>',
+        ]
+
+        for item in sorted_items:
+            feed_text.append(render_item(item))
+
+        feed_text.extend([
+            '  </channel>',
+            '</rss>',
+        ])
+
+        feed_file.write_text("\n".join(feed_text) + "\n", encoding="utf-8")
+        PY
 
     - name: Commit Updated RSS Feed
       run: |
