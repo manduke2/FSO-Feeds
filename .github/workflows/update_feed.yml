@@ -115,24 +115,28 @@ jobs:
         }
 
         if feed_file.exists():
-            tree = ET.parse(feed_file)
-            root = tree.getroot()
-            channel = root.find("channel")
-            if channel is None:
-                sys.exit("Existing feed is invalid: missing channel element")
+            try:
+                tree = ET.parse(feed_file)
+                root = tree.getroot()
+                channel = root.find("channel")
+                if channel is None:
+                    sys.exit("Existing feed is invalid: missing channel element")
 
-            for child in channel:
-                if child.tag == "item":
-                    items.append({
-                        "title": child.findtext("title", default=""),
-                        "link": child.findtext("link", default=""),
-                        "author": child.findtext("author", default=""),
-                        "content": child.findtext("description", default=""),
-                        "pubDate": child.findtext("pubDate", default=""),
-                        "category": child.findtext("category", default=""),
-                    })
-                elif child.tag in channel_metadata:
-                    channel_metadata[child.tag] = child.text or channel_metadata[child.tag]
+                for child in channel:
+                    if child.tag == "item":
+                        items.append({
+                            "title": child.findtext("title", default=""),
+                            "link": child.findtext("link", default=""),
+                            "author": child.findtext("author", default=""),
+                            "content": child.findtext("description", default=""),
+                            "pubDate": child.findtext("pubDate", default=""),
+                            "category": child.findtext("category", default=""),
+                        })
+                    elif child.tag in channel_metadata:
+                        channel_metadata[child.tag] = child.text or channel_metadata[child.tag]
+            except ET.ParseError:
+                # File exists but is invalid/empty - treat as new feed
+                items = []
 
         items.append(new_item)
 
