@@ -46,9 +46,9 @@ jobs:
         if not categories:
             sys.exit("Missing required payload field: category or categories")
         if isinstance(categories, list):
-            categories = ", ".join(str(item) for item in categories)
-        elif not isinstance(categories, str):
-            categories = str(categories)
+            categories = [str(item) for item in categories]
+        else:
+            categories = [str(categories)]
 
         author = payload.get("author")
 
@@ -93,7 +93,8 @@ jobs:
             parts.append(sanitize_cdata(item['content']))
             parts.append("    ]]></description>")
             parts.append(f"    <pubDate>{escape(item['pubDate'])}</pubDate>")
-            parts.append(f"    <category>{escape(item['category'])}</category>")
+            for category in item.get('category', []):
+                parts.append(f"    <category>{escape(category)}</category>")
             parts.append("  </item>")
             return "\n".join(parts) + "\n"
 
@@ -130,7 +131,7 @@ jobs:
                             "author": child.findtext("author", default=""),
                             "content": child.findtext("description", default=""),
                             "pubDate": child.findtext("pubDate", default=""),
-                            "category": child.findtext("category", default=""),
+                            "category": [category.text for category in child.findall("category") if category.text] or [child.findtext("category", default="")],
                         })
                     elif child.tag in channel_metadata:
                         channel_metadata[child.tag] = child.text or channel_metadata[child.tag]
