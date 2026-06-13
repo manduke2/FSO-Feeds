@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>Faculty Senate News Feed</title>
+    <link>https://facultysenate.umich.edu</link>
+    <description>Faculty Senate website news feed</description>
+  <item>
+    <title>test content 8</title>
+    <link>https://dev-sacua-facultysenate.pantheonsite.io/test-content-8/</link>
+    <author>Luke McCarthy</author>
+    <description><![CDATA[
+testing content 324234
+    ]]></description>
+    <pubDate>Sat, 13 Jun 2026 03:51:23 +0000</pubDate>
+    <category>Faculty Senate News</category>
+  </item>
+
+  </channel>
+</rss>
