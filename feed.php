@@ -45,6 +45,12 @@
             return;
         }
 
+        $dispatch_url = pantheon_get_secret( 'Dispatch_URL' );
+        if ( ! $dispatch_url ) {
+            error_log( sprintf( 'GitHub repository dispatch missing Dispatch URL for post %d', $post->ID ) );
+            return;
+        }
+
         $dispatch_version = $post->post_modified_gmt ?: $post->post_date_gmt;
         if ( ! $dispatch_version ) {
             return;
@@ -55,7 +61,7 @@
             return;
         }
 
-        $target_url = 'https://api.github.com/repos/manduke2/fso-feeds/dispatches'; // Destination URL
+        $target_url = $dispatch_url; // Destination URL
         $category_names = wp_get_post_categories( $post->ID, array( 'fields' => 'names' ) );
         $payload = array(
             'event_type'    => 'publish_post',
