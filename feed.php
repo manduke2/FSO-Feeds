@@ -1,4 +1,4 @@
-    <?php
+<?php
 
     if ( ! defined( 'GITHUB_REPOSITORY_DISPATCH_MAX_RETRIES' ) ) {
         define( 'GITHUB_REPOSITORY_DISPATCH_MAX_RETRIES', 3 );
